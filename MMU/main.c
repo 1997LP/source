@@ -39,12 +39,9 @@
 #define VA_GPIO1_ISR           (0X0209C018+0x100000)
 #define VA_GPIO1_EDGE_SEL      (0X0209C01C+0x100000)
 
-
-
-
 #define MMU_SECTION_AP              (0x3<<10)   /*访问权限*/
 #define MMU_SECTION_DOMAIN          (0<<5)      /*属于哪个域*/
-#define MMU_SECTION_SPECIAL         (1<<4)      /*必须是1*/ 
+#define MMU_SECTION_SPECIAL         (1<<4)      /*必须是1,决定该区域是否可以执行*/ 
 #define MMU_SECTION_CACHEEABLE      (1<<3)      /*cacheable*/ 
 #define MMU_SECTION_BUFFERABLE      (1<<2)      /*bufferable*/
 #define MMU_SECTION_SECTION         (2)         /*段映射*/ 
@@ -104,18 +101,19 @@ static void mmu_init(void)
         "ldr r0,=0x80000000\n"
         "mcr p15,0,r0,c2,c0,0\n"  /*设置页表基址寄存器*/
         
-		"ldr r0,=0x0\n"
-		"mcr p15,0,r0,c7,c10,4\n"
-		"mcr p15,0,r0,c8,c7,0\n" /*使无效指令，数据TLB*/
+	//	"ldr r0,=0x0\n"
+	//	"mcr p15,0,r0,c7,c7,0\n"  /*无效ICache DCache*/
+	//	"mcr p15,0,r0,c7,c10,4\n" /*drain write buffer on v4*/
+	//	"mcr p15,0,r0,c8,c7,0\n"  /*使无效指令，数据TLB*/
 		
 		"ldr r0,=0xffffffff\n"
-        "mcr p15,0,r0,c3,c0,0\n"  /*域访问控制寄存器为0xffffffff,不进行权限检查*/
+        "mcr p15,0,r0,c3,c0,0\n"  /*域访问控制寄存器为0xffffffff,不进行权限检查,允许任何访问*/
         
 		"mrc p15,0,r0,c1,c0,0\n"  /*读取控制寄存器的值*/
-        "bic r0,r0,#0x3000\n"
-		"bic r0,r0,#0x0300\n"
-		"bic r0,r0,#0x0087\n"
-		"orr r0,r0,#0x0002\n"    /*开启对齐检查*/
+    //  "bic r0,r0,#0x3000\n"     
+	//	"bic r0,r0,#0x0300\n"
+	//	"bic r0,r0,#0x0087\n"
+	//	"orr r0,r0,#0x0002\n"    /*开启对齐检查*/
 		"orr r0,r0,#0x0004\n"    /*开启Dcache*/
 		"orr r0,r0,#0x1000\n"    /*开启Icache*/
 		"orr r0,r0,#0x0001\n"    /*使能MMU*/
